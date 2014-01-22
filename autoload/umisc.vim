@@ -96,7 +96,7 @@ function! s:IsHereAComment()
   return syn == hlID("Comment")
 endfunction
 
-function! s:IsSemicolonAppropriateHere()
+function! umisc#IsSemicolonAppropriateHere()
   " TODO:
   " Write a regex which will execute faster
   " Think about plugin extraction of the idea
@@ -114,7 +114,18 @@ function! umisc#RebuildAllDependentCTags()
   if pumvisible()
     let l:ret = neocomplete#smart_close_popup()
   endif
-  if s:IsSemicolonAppropriateHere()
+  if umisc#IsSemicolonAppropriateHere()
+    let l:ret = l:ret . ";"
+  endif
+  return l:ret
+endfunction
+
+function! umisc#YieldSemicolonIfAppropriate()
+  let l:ret = ""
+  if pumvisible()
+    let l:ret = neocomplete#smart_close_popup()
+  endif
+  if umisc#IsSemicolonAppropriateHere()
     let l:ret = l:ret . ";"
   endif
   return l:ret
