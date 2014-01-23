@@ -1,4 +1,9 @@
 
+if exists('g:loaded_umisc_autoload')
+    finish
+endif
+let g:loaded_umisc_autoload = 2
+
 function! umisc#RebuildAllDependentCTags()
   let l:tags = &tags
   for t in split(l:tags, ",")
@@ -49,12 +54,12 @@ function! umisc#SearchForwLastSearch()
   endif
 endfunction
 
-function s:SetSearch(sstr)
+function! s:SetSearch(sstr)
      let @/=@/
      return a:sstr
 endfunction
 
-func! umisc#FlashLocn()
+function! umisc#FlashLocn()
    hi CursorColumn guibg=yellow
    hi CursorLine guibg=yellow
    set cul cuc
@@ -508,7 +513,7 @@ function! umisc#FixTerminalKeys()
   endif
 endfunction
 
-function umisc#ToggleHex()
+function! umisc#ToggleHex()
   " hex mode should be considered a read-only operation
   " save values for modified and read-only for restoration later,
   " and clear the read-only flag for now
