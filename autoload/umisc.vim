@@ -467,10 +467,11 @@ endfunction
 " }}}
 
 " Source a range of visually selected vimscript
-function! umisc#SourceRange() range
+function! umisc#SourceRange(startline, endline) range
   let l:tmp = tempname()
-  call writefile(getline(a:firstline, a:lastline), l:tmp)
+  call writefile(getline(a:startline, a:endline), l:tmp)
   execute "source " . l:tmp
+  delete(l:tmp)
 endfunction
 
 " there is also a program named 'ansifilter' which filters out ansi escapes
