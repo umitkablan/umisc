@@ -485,6 +485,14 @@ function! umisc#ClearAnsiSequences(line0, line1)
   exec a:line0 . ',' . a:line1 . 's/\e\[\d\+;\d\+\w//ge'
 endfunction
 
+function! umisc#Space2Tab(line0, line1)
+  exe "".a:line0.",".a:line1."s/^\\(\\ \\{".&ts."\\}\\)\\+/\\=substitute(submatch(0), ' \\{".&ts."\\}', '\\t', 'g')"
+endfunction
+
+function! umisc#Tab2Space(line0, line1)
+  exe "".a:line0.",".a:line1."s/^\\t\\+/\\=substitute(submatch(0), '\\t', repeat(' ', ".&ts."), 'g')"
+endfunction
+
 " fixing arrow keys on terminal Vim
 " Two ideas are..
 " 1) set <Left>=[1;3D
