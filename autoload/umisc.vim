@@ -2,7 +2,7 @@
 if exists('g:loaded_umisc_autoload')
     finish
 endif
-let g:loaded_umisc_autoload = 2
+let g:loaded_umisc_autoload = "0.3"
 
 function! umisc#RebuildAllDependentCTags()
   let l:tags = &tags
@@ -112,17 +112,6 @@ function! umisc#IsSemicolonAppropriateHere()
     return 1
   endif
   return 0
-endfunction
-
-function! umisc#RebuildAllDependentCTags()
-  let l:ret = ""
-  if pumvisible()
-    let l:ret = neocomplete#smart_close_popup()
-  endif
-  if umisc#IsSemicolonAppropriateHere()
-    let l:ret = l:ret . ";"
-  endif
-  return l:ret
 endfunction
 
 function! umisc#YieldSemicolonIfAppropriate()
