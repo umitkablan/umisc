@@ -559,4 +559,17 @@ function! umisc#ToggleHex()
   let &modifiable=l:oldmodifiable
 endfunction
 
+function umisc#TabNextRelatively(n)
+  let l:jmp = (tabpagenr() + a:n) % tabpagenr('$')
+  if l:jmp > 0
+    exec "tabnext " . l:jmp
+  else
+    tablast
+  endif
+endfunction
+
+function umisc#TabPrevRelatively(n)
+  exec "tabprev " . a:n
+endfunction
+
 " vim:fdm=marker
