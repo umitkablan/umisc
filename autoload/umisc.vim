@@ -306,7 +306,7 @@ function! umisc#Filter_Lines(cmd, filter)
   redir END
   let &more = save_more
   new
-  setlocal buftype=nofile bufhidden=hide noswapfile
+  setlocal buftype=nofile bufhidden=hide noswapfile nospell
   put =lines
   g/^\s*$/d
   %s/^\s*\d\+:\s*//e
