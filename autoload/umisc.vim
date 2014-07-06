@@ -4,16 +4,34 @@ if exists('g:loaded_umisc_autoload')
 endif
 let g:loaded_umisc_autoload = "0.3"
 
+function! umisc#AppendPathsRelativeToLocalVimRc(dir)
+  let l:path = g:local_vimrc_path."/".a:dir
+  let l:vcs_dir = umisc#GetDirectoryVCSDotDir(l:path, 1)
+  let &tags = &tags . "," . l:vcs_dir . "/tags"
+  let &path = &path . "," . l:path
+endfunction
+
+function! umisc#GetDirectoryVCSDotDir(dir, isfulldir)
+  if isdirectory(fnamemodify(a:dir."/.svn", ':p:h'))
+    return a:isfulldir ? a:dir."/.svn" : ".svn"
+  endif
+  if isdirectory(fnamemodify(a:dir."/.git", ':p:h'))
+    return a:isfulldir ? a:dir."/.git" : ".git"
+  endif
+  return ".tags_dir"
+endfunction
+
 function! umisc#RebuildAllDependentCTags()
   let l:tags = &tags
   for t in split(l:tags, ",")
-    let l:d = shellescape(fnamemodify(t, ':p:h'))
-    if isdirectory(fnamemodify(t, ':p:h')) != 0
-      echom l:d
-      call system("cd " . l:d . "; ctags -R .")
+    let l:tparent = fnamemodify(t, ':p:h')
+    if isdirectory(l:tparent) != 0
+      let l:vcs_dotdir=umisc#GetDirectoryVCSDotDir(l:tparent."/..", 0)
+      echom l:tparent." : ".l:vcs_dotdir
+      call system("cd ".shellescape(l:tparent)."; rm -f tags; ctags -f tags -R ../")
     else
       echohl ErrorMsg
-      echom "Directory " . l:d . " is non existent!"
+      echom "Directory " . l:tparent . " is non existent!"
       echohl None
     endif
   endfor
