@@ -102,7 +102,7 @@ function! umisc#Make_Tmux_Build(targets)
   if a:targets == ""
     make %
   else
-    exec "SlimuxShellRun m " . a:targets
+    exec "SlimuxShellRun make " . a:targets
   endif
 endfunction
 
