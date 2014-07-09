@@ -12,23 +12,45 @@ function! umisc#AppendPathsRelativeToLocalVimRc(dir)
 endfunction
 
 function! umisc#GetDirectoryVCSDotDir(dir, isfulldir)
-  if isdirectory(fnamemodify(a:dir."/.svn", ':p:h'))
+  if isdirectory(fnamemodify(a:dir."/.svn", ':p'))
     return a:isfulldir ? a:dir."/.svn" : ".svn"
   endif
-  if isdirectory(fnamemodify(a:dir."/.git", ':p:h'))
+  if isdirectory(fnamemodify(a:dir."/.git", ':p'))
     return a:isfulldir ? a:dir."/.git" : ".git"
   endif
-  return ".tags_dir"
+  return ""
+endfunction
+
+function! s:GetParentOfAndVCSDotDirTagsFile(tagspath)
+  let l:tagsdir = fnamemodify(a:tagspath, ':p:h')
+  let l:dirparent = fnamemodify(a:tagspath, ':p:h:h')
+  let l:p = l:tagsdir[strlen(l:dirparent)+1:]
+  if l:p == ".svn"
+    return [l:dirparent, l:p]
+  elseif l:p == ".git"
+    return [l:dirparent, l:p]
+  else
+    return [l:tagsdir, ""]
+  endif
+  return [l:tagsdir, ""]
 endfunction
 
 function! umisc#RebuildAllDependentCTags()
   let l:tags = &tags
   for t in split(l:tags, ",")
-    let l:tparent = fnamemodify(t, ':p:h')
+    if t == ""
+      continue
+    endif
+    " let l:tparent=""
+    " let l:vcs_dir=""
+    let [l:tparent, l:vcs_dotdir] = s:GetParentOfAndVCSDotDirTagsFile(fnamemodify(t, ':p'))
     if isdirectory(l:tparent) != 0
-      let l:vcs_dotdir=umisc#GetDirectoryVCSDotDir(l:tparent."/..", 0)
       echom l:tparent." : ".l:vcs_dotdir
-      call system("cd ".shellescape(l:tparent)."; rm -f tags; ctags -f tags -R ../")
+      if l:vcs_dotdir != ""
+        call system("cd ".shellescape(l:tparent."/".l:vcs_dotdir)."; rm -f tags; ctags -f tags -R ../")
+      else
+        call system("rm -f tags; ctags -f tags -R .")
+      endif
     else
       echohl ErrorMsg
       echom "Directory " . l:tparent . " is non existent!"
