@@ -7,8 +7,22 @@ let g:loaded_umisc_autoload = "0.3"
 function! umisc#AppendPathsRelativeToLocalVimRc(dir)
   let l:path = g:local_vimrc_path."/".a:dir
   let l:vcs_dir = umisc#GetDirectoryVCSDotDir(l:path, 1)
-  let &tags = &tags . "," . l:vcs_dir . "/tags"
-  let &path = &path . "," . l:path
+  if a:dir == "."
+    if l:vcs_dir != ""
+      let g:autotagTagsDir = umisc#GetDirectoryVCSDotDir(l:path, 0)
+    endif
+    set tags=
+    set path=
+    if l:vcs_dir != ""
+      let &tags = l:vcs_dir . "/tags"
+      let &path = l:path
+    endif
+  else
+    if l:vcs_dir != ""
+      let &tags = &tags . "," . l:vcs_dir . "/tags"
+      let &path = &path . "," . l:path
+    endif
+  endif
 endfunction
 
 function! umisc#GetDirectoryVCSDotDir(dir, isfulldir)
