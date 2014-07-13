@@ -8,20 +8,12 @@ function! umisc#AppendPathsRelativeToLocalVimRc(dir)
   let l:path = g:local_vimrc_path."/".a:dir
   let l:vcs_dir = umisc#GetDirectoryVCSDotDir(l:path, 1)
   if a:dir == "."
-    if l:vcs_dir != ""
-      let g:autotagTagsDir = umisc#GetDirectoryVCSDotDir(l:path, 0)
-    endif
-    set tags=
-    set path=
-    if l:vcs_dir != ""
-      let &tags = l:vcs_dir . "/tags"
-      let &path = l:path
-    endif
+    let g:autotagTagsDir = umisc#GetDirectoryVCSDotDir(l:path, 0)
+    let &tags = (l:vcs_dir!="" ? l:vcs_dir."/tags" : l:path."/tags")
+    let &path = l:path
   else
-    if l:vcs_dir != ""
-      let &tags = &tags . "," . l:vcs_dir . "/tags"
-      let &path = &path . "," . l:path
-    endif
+    let &tags = &tags . "," . (l:vcs_dir!="" ? l:vcs_dir."/tags" : l:path."/tags")
+    let &path = &path . "," . l:path
   endif
 endfunction
 
@@ -51,6 +43,7 @@ endfunction
 
 function! umisc#RebuildAllDependentCTags()
   let l:tags = &tags
+  let l:cwd = getcwd()
   for t in split(l:tags, ",")
     if t == ""
       continue
@@ -58,12 +51,20 @@ function! umisc#RebuildAllDependentCTags()
     " let l:tparent=""
     " let l:vcs_dir=""
     let [l:tparent, l:vcs_dotdir] = s:GetParentOfAndVCSDotDirTagsFile(fnamemodify(t, ':p'))
+    " Do not rebuild existing tags if directory is external (dependant) ...
+    if l:tparent != l:cwd
+      " ... If directory is at external location then it needn't be done here.
+      if filereadable(l:tparent."/".l:vcs_dotdir."/tags")
+        echom "Skipping: " . l:tparent . " (tags already existing)"
+        continue
+      endif
+    endif
     if isdirectory(l:tparent) != 0
       echom l:tparent." : ".l:vcs_dotdir
       if l:vcs_dotdir != ""
         call system("cd ".shellescape(l:tparent."/".l:vcs_dotdir)."; rm -f tags; ctags -f tags -R ../")
       else
-        call system("rm -f tags; ctags -f tags -R .")
+        call system("cd ".shellescape(l:tparent)."; rm -f tags; ctags -f tags -R .")
       endif
     else
       echohl ErrorMsg
