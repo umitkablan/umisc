@@ -1,9 +1,4 @@
 
-if exists('g:loaded_umisc_autoload')
-    finish
-endif
-let g:loaded_umisc_autoload = "0.3"
-
 function! umisc#AppendPathsRelativeToLocalVimRc(dir)
   let l:path = g:local_vimrc_path."/".a:dir
   let l:vcs_dir = umisc#GetDirectoryVCSDotDir(l:path, 1)
