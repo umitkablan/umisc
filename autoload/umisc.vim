@@ -132,6 +132,8 @@ endfunction
 function! umisc#Make_Tmux_Build(targets)
   update
   if a:targets == ""
+    make
+  elseif a:targets == "__"
     make %
   else
     exec "SlimuxShellRun make " . a:targets
