@@ -105,17 +105,17 @@ function! umisc#SearchForwLastSearch()
 endfunction
 
 function! s:SetSearch(sstr)
-     let @/=@/
-     return a:sstr
+  let @/=@/
+  return a:sstr
 endfunction
 
 function! umisc#FlashLocn()
-   hi CursorColumn guibg=yellow
-   hi CursorLine guibg=yellow
-   set cul cuc
-   redraw!
-   "sleep 1m
-   set nocul nocuc
+  hi CursorColumn guibg=yellow
+  hi CursorLine guibg=yellow
+  set cul cuc
+  redraw!
+  "sleep 1m
+  set nocul nocuc
 endfunction
 
 function! umisc#ApplyPatch()
