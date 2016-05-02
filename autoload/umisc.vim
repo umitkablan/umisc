@@ -57,7 +57,7 @@ function! umisc#RebuildAllDependentCTags()
     if isdirectory(l:tparent) != 0
       echom l:tparent." : ".l:vcs_dotdir
       if l:vcs_dotdir != ""
-        call system("cd ".shellescape(l:tparent."/".l:vcs_dotdir)."; rm -f tags; ctags -f tags -R ../")
+        call system("cd ".shellescape(l:tparent."/".l:vcs_dotdir)."; rm -f tags; ctags -f tags -R ..")
       else
         call system("cd ".shellescape(l:tparent)."; rm -f tags; ctags -f tags -R .")
       endif
@@ -269,11 +269,15 @@ function! umisc#GuiTabLabel()
   return label . '  [' . wincount . ']'
 endfunction
 
-function! umisc#OpenExplore()
+function! umisc#OpenExplore(...)
   if bufname(bufnr("%")) ==? ""
     silent! Explore
   else
-    silent! Sexplore
+    if a:0 > 0 && a:1 == "vertical"
+      Vexplore
+    else
+      silent! Sexplore
+    endif
   endif
 endfunction
 
