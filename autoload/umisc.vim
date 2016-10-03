@@ -1,4 +1,23 @@
 
+function! umisc#DirectorySettled(curPath) abort
+    let g:local_vimrc_path = a:curPath
+    let l:lvimrc = a:curPath . '/.lvimrc'
+    if filereadable(l:lvimrc)
+      exe 'source ' . escape(l:lvimrc, ' \$,')
+    else
+      let l:vcs_dir = umisc#GetDirectoryVCSDotDir(a:curPath, 1)
+      if l:vcs_dir != "" && isdirectory(l:vcs_dir)
+        call umisc#AppendPathsRelativeToLocalVimRc('.')
+        if !filereadable('./.git/tags')
+          call umisc#RebuildAllDependentCTags()
+          let l:tgs = &tags
+          let &tags = ''
+          let &tags = l:tgs
+        endif
+      endif
+    endif
+endfunction
+
 function! umisc#AppendPathsRelativeToLocalVimRc(dir)
   let l:path = g:local_vimrc_path."/".a:dir
   let l:vcs_dir = umisc#GetDirectoryVCSDotDir(l:path, 1)
@@ -181,7 +200,7 @@ function! s:IsTagsActiveFileType(ft)
   if a:ft == ""
     return 0
   endif
-  return stridx("c,cpp,java,javascript,python,actionscript,sh", a:ft) >= 0
+  return stridx("c,cpp,java,javascript,python,actionscript,sh,go", a:ft) >= 0
 endfunction
 
 "wrapper on signs' update: wraps quickfixsigns and DynamicSigns
