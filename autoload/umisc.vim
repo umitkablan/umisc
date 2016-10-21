@@ -1,6 +1,6 @@
 
 function! umisc#DirectorySettled(curPath) abort
-    let g:local_vimrc_path = a:curPath
+    let b:local_vimrc_path = a:curPath
     let l:lvimrc = a:curPath . '/.lvimrc'
     if filereadable(l:lvimrc)
       exe 'source ' . escape(l:lvimrc, ' \$,')
@@ -19,7 +19,7 @@ function! umisc#DirectorySettled(curPath) abort
 endfunction
 
 function! umisc#AppendPathsRelativeToLocalVimRc(dir)
-  let l:path = g:local_vimrc_path."/".a:dir
+  let l:path = b:local_vimrc_path."/".a:dir
   let l:vcs_dir = umisc#GetDirectoryVCSDotDir(l:path, 1)
   if a:dir == "."
     let g:autotagTagsDir = umisc#GetDirectoryVCSDotDir(l:path, 0)
