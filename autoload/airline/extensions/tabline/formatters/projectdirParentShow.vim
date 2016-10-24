@@ -1,5 +1,5 @@
 
-function! airline#extensions#tabline#formatters#projectdirParentShow(bufnr, buffers)
+function! airline#extensions#tabline#formatters#projectdirParentShow#format(bufnr, buffers)
   let _ = getbufvar(a:bufnr, 'local_vimrc_path')
   if _ != ""
     return fnamemodify(_, ':t')
