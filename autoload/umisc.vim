@@ -52,7 +52,6 @@ function! s:GetParentOfAndVCSDotDirTagsFile(tagspath)
   else
     return [l:tagsdir, ""]
   endif
-  return [l:tagsdir, ""]
 endfunction
 
 function! umisc#RebuildAllDependentCTags()
@@ -188,7 +187,7 @@ endfunction
 function! umisc#YieldSemicolonIfAppropriate()
   let l:ret = ""
   if pumvisible()
-    let l:ret = neocomplete#smart_close_popup()
+    let l:ret = "\<C-y>" "neocomplete#smart_close_popup()
   endif
   if umisc#IsSemicolonAppropriateHere()
     let l:ret = l:ret . ";"
@@ -337,6 +336,7 @@ function! umisc#VimProcMake()
     let res .= sub.stdout.read()
   endwhile
   let [cond, status] = sub.waitpid()
+  unlet! cond
   call setqflist([])
   call vimproc#write("/dev/quickfix", res)
   if status == 0
