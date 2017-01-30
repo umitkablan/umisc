@@ -238,10 +238,6 @@ function! umisc#QFixCloseAndCheck()
     cclose
     unlet! g:qfix_win
     return 1
-  else
-    if !s:IsTagsActiveFileType(&ft)
-      execute "q"
-    endif
   endif
   return 0
 endfunction
