@@ -238,6 +238,9 @@ function! umisc#QFixCloseAndCheck()
     cclose
     unlet! g:qfix_win
     return 1
+  elseif &swapfile == 0 && &buftype == "nofile" && &buflisted == 0
+    exec "quit"
+    return 2
   endif
   return 0
 endfunction
