@@ -1,3 +1,4 @@
+scriptencoding utf-8
 
 function! umisc#DirectorySettled(curPath) abort
     let b:local_vimrc_path = a:curPath
@@ -6,9 +7,9 @@ function! umisc#DirectorySettled(curPath) abort
       exe 'source ' . escape(l:lvimrc, ' \$,')
     else
       let l:vcs_dir = umisc#GetDirectoryVCSDotDir(a:curPath, 1)
-      if l:vcs_dir != "" && isdirectory(l:vcs_dir)
+      if l:vcs_dir !=# '' && isdirectory(l:vcs_dir)
         call umisc#AppendPathsRelativeToLocalVimRc('.')
-        if !filereadable('./.git/tags')
+        if !filereadable(l:vcs_dir . '/tags')
           call umisc#RebuildAllDependentCTags()
           let l:tgs = &tags
           let &tags = ''
@@ -18,79 +19,79 @@ function! umisc#DirectorySettled(curPath) abort
     endif
 endfunction
 
-function! umisc#AppendPathsRelativeToLocalVimRc(dir)
-  let l:path = b:local_vimrc_path."/".a:dir
+function! umisc#AppendPathsRelativeToLocalVimRc(dir) abort
+  let l:path = b:local_vimrc_path.'/'.a:dir
   let l:vcs_dir = umisc#GetDirectoryVCSDotDir(l:path, 1)
-  if a:dir == "."
+  if a:dir ==# '.'
     let g:autotagTagsDir = umisc#GetDirectoryVCSDotDir(l:path, 0)
-    let &tags = (l:vcs_dir!="" ? l:vcs_dir."/tags" : l:path."/tags")
+    let &tags = (l:vcs_dir!=#'' ? l:vcs_dir.'/tags' : l:path.'/tags')
     let &path = l:path
   else
-    let &tags = &tags . "," . (l:vcs_dir!="" ? l:vcs_dir."/tags" : l:path."/tags")
-    let &path = &path . "," . l:path
+    let &tags = &tags . ',' . (l:vcs_dir!=#'' ? l:vcs_dir.'/tags' : l:path.'/tags')
+    let &path = &path . ',' . l:path
   endif
 endfunction
 
-function! umisc#GetDirectoryVCSDotDir(dir, isfulldir)
-  if isdirectory(fnamemodify(a:dir."/.svn", ':p'))
-    return a:isfulldir ? a:dir."/.svn" : ".svn"
+function! umisc#GetDirectoryVCSDotDir(dir, isfulldir) abort
+  if isdirectory(fnamemodify(a:dir.'/.svn', ':p'))
+    return a:isfulldir ? a:dir.'/.svn' : '.svn'
   endif
-  if isdirectory(fnamemodify(a:dir."/.git", ':p'))
-    return a:isfulldir ? a:dir."/.git" : ".git"
+  if isdirectory(fnamemodify(a:dir.'/.git', ':p'))
+    return a:isfulldir ? a:dir.'/.git' : '.git'
   endif
-  return ""
+  return ''
 endfunction
 
-function! s:GetParentOfAndVCSDotDirTagsFile(tagspath)
+function! s:GetParentOfAndVCSDotDirTagsFile(tagspath) abort
   let l:tagsdir = fnamemodify(a:tagspath, ':p:h')
   let l:dirparent = fnamemodify(a:tagspath, ':p:h:h')
   let l:p = l:tagsdir[strlen(l:dirparent)+1:]
-  if l:p == ".svn"
+  if l:p ==# '.svn'
     return [l:dirparent, l:p]
-  elseif l:p == ".git"
+  elseif l:p ==# '.git'
     return [l:dirparent, l:p]
   else
-    return [l:tagsdir, ""]
+    return [l:tagsdir, '']
   endif
 endfunction
 
-function! umisc#RebuildAllDependentCTags()
+function! umisc#RebuildAllDependentCTags() abort
   let l:tags = &tags
   let l:cwd = getcwd()
-  for t in split(l:tags, ",")
-    if t == ""
+  for t in split(l:tags, ',')
+    if t ==# ''
       continue
     endif
-    " let l:tparent=""
-    " let l:vcs_dir=""
+    " let l:tparent=''
+    " let l:vcs_dir=''
     let [l:tparent, l:vcs_dotdir] = s:GetParentOfAndVCSDotDirTagsFile(fnamemodify(t, ':p'))
     " Do not rebuild existing tags if directory is external (dependant) ...
     if l:tparent != l:cwd
       " ... If directory is at external location then it needn't be done here.
-      if filereadable(l:tparent."/".l:vcs_dotdir."/tags")
-        echom "Skipping: " . l:tparent . " (tags already existing)"
+      if filereadable(l:tparent.'/'.l:vcs_dotdir.'/tags')
+        echom 'Skipping: ' . l:tparent . ' (tags already existing)'
         continue
       endif
     endif
     if isdirectory(l:tparent) != 0
-      echom l:tparent." : ".l:vcs_dotdir
-      if l:vcs_dotdir != ""
-        call system("cd ".shellescape(l:tparent."/".l:vcs_dotdir)."; rm -f tags; ctags -f tags -R ..")
+      echom l:tparent.' : '.l:vcs_dotdir
+      if l:vcs_dotdir !=# ''
+        call system('cd '.shellescape(l:tparent.'/'.l:vcs_dotdir).'; rm -f tags; ctags -f tags -R ..')
       else
-        call system("cd ".shellescape(l:tparent)."; rm -f tags; ctags -f tags -R .")
+        call system('cd '.shellescape(l:tparent).'; rm -f tags; ctags -f tags -R .')
       endif
     else
       echohl ErrorMsg
-      echom "Directory " . l:tparent . " is non existent!"
+      echom 'Directory ' . l:tparent . ' is non existent!'
       echohl None
     endif
   endfor
-  echom "DONE"
+  echom 'DONE'
 endfunction
 
-function! umisc#GoToRandomLine()
+function! umisc#GoToRandomLine() abort
   ruby Vim.command 'normal! ' + (VIM::Buffer.current.length * rand).ceil.to_s + 'gg'
-  " execute 'normal! '.(system('sh -c "echo -n $RANDOM"') % line('$')).'G'
+  " execute 'normal! '.(system('sh -c 'echo -n $RANDOM'') % line('$')).'G'
   " execute 'normal! '.(matchstr(system('od -vAn -N3 -tu4 /dev/urandom'), '^\_s*\zs.\{-}\ze\_s*$') % line('$')).'G'
 endfunction
 
@@ -100,7 +101,7 @@ endfunction
 " problem: you cannot jump to 05, becaues 5 will be passed via v:count
 "
 " https://github.com/MarcWeber/vim-addon-other/blob/master/autoload/vim_addon_other.vim
-function! umisc#GotoLine_WithoutInitials(visual_select)
+function! umisc#GotoLine_WithoutInitials(visual_select) abort
     let c = v:count
     let half = ('1'.repeat('0',len(c))) / 2
     let lnum = line('.')[:-len(c)-1].c
@@ -114,20 +115,20 @@ function! umisc#GotoLine_WithoutInitials(visual_select)
     endif
 endfunction
 
-function! umisc#SearchForwLastSearch()
-  if @/ == ""
-    return "/\<Up>\<CR>"
+function! umisc#SearchForwLastSearch() abort
+  if @/ ==# ''
+    return '/\<Up>\<CR>'
   else
-    return "/\<CR>"
+    return '/\<CR>'
   endif
 endfunction
 
-function! s:SetSearch(sstr)
+function! s:SetSearch(sstr) abort
   let @/=@/
   return a:sstr
 endfunction
 
-function! umisc#FlashLocn()
+function! umisc#FlashLocn() abort
   hi CursorColumn guibg=yellow
   hi CursorLine guibg=yellow
   set cul cuc
@@ -136,74 +137,76 @@ function! umisc#FlashLocn()
   set nocul nocuc
 endfunction
 
-function! umisc#ApplyPatch()
-  let l:tmpfilename = tempname() . ".patch"
+function! umisc#ApplyPatch() abort
+  let l:tmpfilename = tempname() . '.patch'
   let l:s = @"
-  let l:ll = split(l:s, "\n")
-  call writefile(l:ll, l:tmpfilename, "b")
+  call writefile(split(l:s, '\n'), l:tmpfilename, 'b')
   " using system() does not rewash the screen
-  let l:res = system("patch -p1 < " .  shellescape(l:tmpfilename))
-  call system("rm -f " . shellescape(l:tmpfilename))
-  echom l:res
+  let l:res = system('patch -p1 < ' .  shellescape(l:tmpfilename))
+  echomsg 'Shell result ->'
+  echomsg v:shell_error
+  call delete(l:tmpfilename)
+  echomsg l:res
 endfunction
 
-function! umisc#Make_Tmux_Build(targets)
+function! umisc#Make_Tmux_Build(targets) abort
   update
-  if a:targets == ""
+  if a:targets ==# ''
     make
-  elseif a:targets == "__"
+  elseif a:targets ==# '__'
     make %
   else
-    exec "SlimuxShellRun make " . a:targets
+    exec 'SlimuxShellRun make ' . a:targets
   endif
 endfunction
 
-function! s:MapPumInsert(key, insertSpaceAfter)
+function! s:MapPumInsert(key, insertSpaceAfter) abort
   if !a:insertSpaceAfter
-    exec "imap <expr> " . a:key . " pumvisible() ? \"\<C-y>".a:key."\" : \"".a:key."\""
+    exec 'imap <expr> ' . a:key . ' pumvisible() ? \"\<C-y>'.a:key.'" : "'.a:key.'"'
   else
-    exec "imap <expr> " . a:key . " pumvisible() ? neocomplete#close_popup()".a:key."\<Space>\" : \"".a:key."\""
+    exec 'imap <expr> ' . a:key . ' pumvisible() ? neocomplete#close_popup()'.a:key.'\<Space>\" : \"'.a:key.'"'
   endif
 endfunction
 
-function! s:IsHereAComment()
-  let syn = synIDtrans(synID(line("."), col(".")-1, 1))
-  return syn == hlID("Comment")
+function! s:IsHereAComment() abort
+  let syn = synIDtrans(synID(line('.'), col('.')-1, 1))
+  return syn == hlID('Comment')
 endfunction
 
-function! umisc#IsSemicolonAppropriateHere()
+function! umisc#IsSemicolonAppropriateHere() abort
   " TODO:
   " Write a regex which will execute faster
   " Think about plugin extraction of the idea
-  let cline = getline(".")
-  let lastchar  = cline[col("$")-2]
+  let cline = getline('.')
+  let lastchar  = cline[col('$')-2]
   let firstchar = cline[0]
-  if col("$") == col(".") && lastchar != ";" && lastchar != "{" && lastchar != "}" && lastchar != "," && lastchar != ":" && firstchar != "#" && cline !~ '^\s*$' && lastchar != "\\" && !s:IsHereAComment()
+  if col('$') == col('.') && lastchar !=# ';' && lastchar !=# '{' && lastchar !=# '}' && lastchar !=# ',' &&
+        \ lastchar !=# ':' && firstchar !=# '#' && cline !~# '^\s*$' && lastchar !=# '\\' && !s:IsHereAComment()
     return 1
   endif
   return 0
 endfunction
 
-function! umisc#YieldSemicolonIfAppropriate()
-  let l:ret = ""
+function! umisc#YieldSemicolonIfAppropriate() abort
+  let l:ret = ''
   if pumvisible()
-    let l:ret = "\<C-y>" "neocomplete#smart_close_popup()
+    let l:ret = '\<C-y>' "neocomplete#smart_close_popup()
   endif
   if umisc#IsSemicolonAppropriateHere()
-    let l:ret = l:ret . ";"
+    let l:ret = l:ret . ';'
   endif
   return l:ret
 endfunction
 
-function! s:IsTagsActiveFileType(ft)
-  if a:ft == ""
+function! s:IsTagsActiveFileType(ft) abort
+  if a:ft ==# ''
     return 0
   endif
-  return stridx("c,cpp,java,javascript,python,actionscript,sh,go", a:ft) >= 0
+  return stridx('c,cpp,java,javascript,python,actionscript,sh,go', a:ft) >= 0
 endfunction
 
 "wrapper on signs' update: wraps quickfixsigns and DynamicSigns
-function! UpdateSigns_()
+function! UpdateSigns_() abort
   if exists('g:loaded_quickfixsigns') && g:loaded_quickfixsigns == 0
     call QuickfixsignsUpdate()
   endif
@@ -213,7 +216,7 @@ function! UpdateSigns_()
 endfunction
 
 " save/load quickfix list {{{
-function! umisc#SaveQuickFixList(fname)
+function! umisc#SaveQuickFixList(fname) abort
   let list = getqflist()
   for i in range(len(list))
     if has_key(list[i], 'bufnr')
@@ -226,41 +229,41 @@ function! umisc#SaveQuickFixList(fname)
   call writefile(lines, a:fname)
 endfunction
 
-function! umisc#LoadQuickFixList(fname)
+function! umisc#LoadQuickFixList(fname) abort
   let lines = readfile(a:fname)
   let string = join(lines, "\n")
   call setqflist(eval(string))
 endfunction
 " }}}
 
-function! umisc#QFixCloseAndCheck()
-  if exists("g:qfix_win")
+function! umisc#QFixCloseAndCheck() abort
+  if exists('g:qfix_win')
     cclose
     unlet! g:qfix_win
     return 1
-  elseif &swapfile == 0 && &buftype == "nofile" && &buflisted == 0
-    exec "quit"
+  elseif &swapfile == 0 && &buftype ==# 'nofile' && &buflisted == 0
+    exec 'quit'
     return 2
   endif
   return 0
 endfunction
 
-function! umisc#QFixToggle(forced)
-  if exists("g:qfix_win") && a:forced == 0
+function! umisc#QFixToggle(forced) abort
+  if exists('g:qfix_win') && a:forced == 0
     cclose
     unlet! g:qfix_win
   else
     copen 15
-    let g:qfix_win = bufnr("$")
+    let g:qfix_win = bufnr('$')
   endif
 endfunction
 
-function! umisc#GuiTabLabel()
+function! umisc#GuiTabLabel() abort
   let label = ''
   let bufnrlist = tabpagebuflist(v:lnum)
   " Add '+' if one of the buffers in the tab page is modified
   for bufnr in bufnrlist
-    if getbufvar(bufnr, "&modified")
+    if getbufvar(bufnr, '&modified')
       let label = '+'
       break
     endif
@@ -269,16 +272,16 @@ function! umisc#GuiTabLabel()
   let label .= v:lnum.': '
   " Append the buffer name
   let name = bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
-  if name == ''
+  if name ==# ''
     " give a name to no-name documents
-    if &buftype=='quickfix'
+    if &buftype ==# 'quickfix'
       let name = '[Quickfix List]'
     else
       let name = '[No Name]'
     endif
   else
     " get only the file name
-    let name = fnamemodify(name,":t")
+    let name = fnamemodify(name,':t')
   endif
   let label .= name
   " Append the number of windows in the tab page
@@ -286,11 +289,11 @@ function! umisc#GuiTabLabel()
   return label . '  [' . wincount . ']'
 endfunction
 
-function! umisc#OpenExplore(...)
-  if bufname(bufnr("%")) ==? ""
+function! umisc#OpenExplore(...) abort
+  if bufname(bufnr('%')) ==? ''
     silent! Explore
   else
-    if a:0 > 0 && a:1 == "vertical"
+    if a:0 > 0 && a:1 ==# 'vertical'
       Vexplore
     else
       silent! Sexplore
@@ -300,17 +303,17 @@ endfunction
 
 " with ctags you can search for tags.DB upward hieararchy via :set tags=tags;/
 " but cscope cannot do that withuot helper like this one
-function! umisc#LoadCscope()
-  let db = findfile("cscope.out", ".;")
+function! umisc#LoadCscope() abort
+  let db = findfile('cscope.out', '.;')
   if (!empty(db))
-    let path = strpart(db, 0, match(db, "/cscope.out$"))
+    let path = strpart(db, 0, match(db, '/cscope.out$'))
     set nocscopeverbose " suppress 'duplicate connection' error
-    exe "cs add " . db . " " . path
+    exe 'cs add ' . db . ' ' . path
     set cscopeverbose
   endif
 endfunction
 
-function! umisc#DecAndHex(number)
+function! umisc#DecAndHex(number) abort
   let ns = '[.,;:''"<>()^_lL"]'      " number separators
   if a:number =~? '^' . ns. '*[-+]\?\d\+' . ns . '*$'
     let dec = substitute(a:number, '[^0-9+-]*\([+-]\?\d\+\).*','\1','')
@@ -324,11 +327,11 @@ function! umisc#DecAndHex(number)
     endif
     echo
   else
-    echo "NaN"
+    echo 'NaN'
   endif
 endfunction
 
-function! umisc#VimProcMake()
+function! umisc#VimProcMake() abort
   let sub = vimproc#popen2(':make')
   let res = ''
   while !sub.stdout.eof
@@ -337,7 +340,7 @@ function! umisc#VimProcMake()
   let [cond, status] = sub.waitpid()
   unlet! cond
   call setqflist([])
-  call vimproc#write("/dev/quickfix", res)
+  call vimproc#write('/dev/quickfix', res)
   if status == 0
     cclose
   else
@@ -345,26 +348,26 @@ function! umisc#VimProcMake()
   endif
 endfunction
 
-function! umisc#TDD_Mode()
+function! umisc#TDD_Mode() abort
   SyntasticToggleMode
   " au BufWritePost * :call QuickfixsignsClear('qfl')|call umisc#VimProcMake()
   au BufWritePost * call umisc#VimProcMake()
 endfunction
 
-function! umisc#Underline(chars)
+function! umisc#Underline(chars) abort
   let chars = empty(a:chars) ? '-' : a:chars
   let nr_columns = virtcol('$') - 1
   let uline = repeat(chars, (nr_columns / len(chars)) + 1)
   put =strpart(uline, 0, nr_columns)
 endfunction
 
-function! s:SwapKeys(a, b)
-  normal! "exec noremap  " . a:a . " " . a:b
-  normal! "exec noremap  " . a:b . " " . a:a
-  normal! "exec onoremap " . a:a . " " . a:b
-  normal! "exec onoremap " . a:b . " " . a:a
-  normal! "exec xnoremap " . a:a . " " . a:b
-  normal! "exec xnoremap " . a:b . " " . a:a
+function! s:SwapKeys(a, b) abort
+  normal! 'exec noremap  ' . a:a . ' ' . a:b
+  normal! 'exec noremap  ' . a:b . ' ' . a:a
+  normal! 'exec onoremap ' . a:a . ' ' . a:b
+  normal! 'exec onoremap ' . a:b . ' ' . a:a
+  normal! 'exec xnoremap ' . a:a . ' ' . a:b
+  normal! 'exec xnoremap ' . a:b . ' ' . a:a
 endfunction
 
 " Execute 'cmd' while redirecting output.
@@ -372,7 +375,7 @@ endfunction
 " Delete any blank lines.
 " Delete '<whitespace><number>:<whitespace>' from start of each line.
 " Display result in a scratch buffer.
-function! umisc#Filter_Lines(cmd, filter)
+function! umisc#Filter_Lines(cmd, filter) abort
   let save_more = &more
   set nomore
   redir => lines
@@ -391,13 +394,13 @@ function! umisc#Filter_Lines(cmd, filter)
 endfunction
 
 " command PP: print lines like :p or :# but with with current search pattern highlighted
-function! umisc#PrintWithSearchHighlighted(line1,line2,arg)
+function! umisc#PrintWithSearchHighlighted(line1, line2, arg) abort
   let line=a:line1
   while line <= a:line2
-    echo ""
-    if a:arg =~ "#"
+    echo ''
+    if a:arg =~# '#'
       echohl LineNr
-      echo strpart(" ",0,7-strlen(line)).line."\t"
+      echo strpart(' ',0,7-strlen(line)).line.'\t'
       echohl None
     endif
     let l=getline(line)
@@ -419,7 +422,7 @@ function! umisc#PrintWithSearchHighlighted(line1,line2,arg)
   endw
 endfunction
 
-function! umisc#VimLock(enable)
+function! umisc#VimLock(enable) abort
   if a:enable
     inoremap a 1
     inoremap s 2
@@ -447,7 +450,7 @@ function! umisc#VimLock(enable)
   endif
 endfunction
 
-function! umisc#TwiddleCase(str)
+function! umisc#TwiddleCase(str) abort
   if a:str ==# toupper(a:str)
     let result = tolower(a:str)
   elseif a:str ==# tolower(a:str)
@@ -459,7 +462,7 @@ function! umisc#TwiddleCase(str)
 endfunction
 
 let s:indentation_guides_enabled = 0
-function! umisc#ToggleIndGuides_RC()
+function! umisc#ToggleIndGuides_RC() abort
   if s:indentation_guides_enabled == 1
     " IndGuide!
     IndentGuidesDisable
@@ -473,14 +476,14 @@ endfunction
 
 " Trans to/from Turkish dotted char form {{{
 let g:letters_map_en_tr_forward = {
-      \ 'o':'ö', 'c':'ç', 'g':'ğ', 's':'ş', 'i':'ı', 'u':"ü",
+      \ 'o':'ö', 'c':'ç', 'g':'ğ', 's':'ş', 'i':'ı', 'u':'ü',
       \  'O':'Ö', 'C':'Ç', 'G':'Ğ', 'S':'Ş', 'I':'İ', 'U':'Ü'
       \ }
 let g:letters_map_en_tr_reverse = {
       \ 'ö':'o', 'ç':'c', 'ğ':'g', 'ş':'s', 'ı':'i', 'ü':'u',
       \  'Ö':'O', 'Ç':'C', 'Ğ':'G', 'Ş':'S', 'İ':'I', 'Ü':'U'
       \ }
-function! umisc#SwapTrCharsToFromEn()
+function! umisc#SwapTrCharsToFromEn() abort
   let l:saved_reg = @k
   norm "kyl
   let l:curletter = @k
@@ -495,7 +498,7 @@ endfunction
 " }}}
 
 let g:rainbowparantheses_enabled_RC=0
-function! umisc#RainbowParanthesisEnableAll_RC()
+function! umisc#RainbowParanthesisEnableAll_RC() abort
   if g:rainbowparantheses_enabled_RC == 0
     RainbowParenthesesToggle
     " ToggleRaibowParenthesis
@@ -514,32 +517,32 @@ endfunction
 " Next and Last {{{
 " Motion for "next/last object". For example, "din(" would go to the next "()" pair
 " and delete its contents.
-function! umisc#NextTextObject(motion, dir)
+function! umisc#NextTextObject(motion, dir) abort
   let c = nr2char(getchar())
-  if c ==# "b"
-      let c = "("
-  elseif c ==# "B"
-      let c = "{"
-  elseif c ==# "d"
-      let c = "["
-  elseif c ==# "q"
-      let c = "\""
+  if c ==# 'b'
+      let c = '('
+  elseif c ==# 'B'
+      let c = '{'
+  elseif c ==# 'd'
+      let c = '['
+  elseif c ==# 'q'
+      let c = '"'
   endif
-  exe "normal! ".a:dir.c."v".a:motion.c
+  exe 'normal! ' . a:dir . c . 'v' . a:motion . c
 endfunction
 " }}}
 
 " Source a range of visually selected vimscript
-function! umisc#SourceRange(startline, endline) range
+function! umisc#SourceRange(startline, endline) abort
   let l:tmp = tempname()
   call writefile(getline(a:startline, a:endline), l:tmp)
-  execute "source " . l:tmp
+  execute 'source ' . l:tmp
   call delete(l:tmp)
 endfunction
 
 " there is also a program named 'ansifilter' which filters out ansi escapes
 " unsuccessfully.
-function! umisc#ClearAnsiSequences(line0, line1)
+function! umisc#ClearAnsiSequences(line0, line1) abort
   exec a:line0 . ',' . a:line1 . 's/\e\[[[:digit:];]*m//ge'
   exec a:line0 . ',' . a:line1 . 's/\e(B//ge'
   " TODO: This substitution sometimes remains comma behind because of the
@@ -548,12 +551,12 @@ function! umisc#ClearAnsiSequences(line0, line1)
   exec a:line0 . ',' . a:line1 . 's/\e\[\d\+;\d\+\w//ge'
 endfunction
 
-function! umisc#Space2Tab(line0, line1)
-  exe "".a:line0.",".a:line1."s/^\\(\\ \\{".&ts."\\}\\)\\+/\\=substitute(submatch(0), ' \\{".&ts."\\}', '\\t', 'g')"
+function! umisc#Space2Tab(line0, line1) abort
+  exe ''.a:line0.','.a:line1."s/^\\(\\ \\{".&ts."\\}\\)\\+/\\=substitute(submatch(0), ' \\{".&ts."\\}', '\\t', 'g')"
 endfunction
 
-function! umisc#Tab2Space(line0, line1)
-  exe "".a:line0.",".a:line1."s/^\\t\\+/\\=substitute(submatch(0), '\\t', repeat(' ', ".&ts."), 'g')"
+function! umisc#Tab2Space(line0, line1) abort
+  exe ''.a:line0.','.a:line1."s/^\\t\\+/\\=substitute(submatch(0), '\\t', repeat(' ', ".&ts."), 'g')"
 endfunction
 
 " fixing arrow keys on terminal Vim
@@ -561,12 +564,13 @@ endfunction
 " 1) set <Left>=[1;3D
 " 2) (i)(nore)map <Esc>OC <Right>
 " using the first idea is logical for portability reasons.
-function! s:Allmap(mapping)
+function! s:Allmap(mapping) abort
   execute 'map'  . a:mapping
   execute 'map!' . a:mapping
 endfunction
-function! umisc#FixTerminalKeys()
-  if !has("gui_running")
+
+function! umisc#FixTerminalKeys() abort
+  if !has('gui_running')
     call s:Allmap(' <Esc>[1;3D <Left>')
     call s:Allmap(' <Esc>[1;3A <Up>')
     call s:Allmap(' <Esc>[1;3B <Down>')
@@ -596,7 +600,7 @@ function! umisc#FixTerminalKeys()
   endif
 endfunction
 
-function! umisc#ToggleHex()
+function! umisc#ToggleHex() abort
   " hex mode should be considered a read-only operation
   " save values for modified and read-only for restoration later,
   " and clear the read-only flag for now
@@ -605,13 +609,13 @@ function! umisc#ToggleHex()
   let &readonly=0
   let l:oldmodifiable=&modifiable
   let &modifiable=1
-  if !exists("b:editHex") || !b:editHex
+  if !exists('b:editHex') || !b:editHex
     " save old options
     let b:oldft=&ft
     let b:oldbin=&bin
     " set new options
     setlocal binary " make sure it overrides any textwidth, etc.
-    let &ft="xxd"
+    let &ft='xxd'
     " set status
     let b:editHex=1
     " switch to hex editor
@@ -633,17 +637,17 @@ function! umisc#ToggleHex()
   let &modifiable=l:oldmodifiable
 endfunction
 
-function umisc#TabNextRelatively(n)
+function umisc#TabNextRelatively(n) abort
   let l:jmp = (tabpagenr() + a:n) % tabpagenr('$')
   if l:jmp > 0
-    exec "tabnext " . l:jmp
+    exec 'tabnext ' . l:jmp
   else
     tablast
   endif
 endfunction
 
-function umisc#TabPrevRelatively(n)
-  exec "tabprev " . a:n
+function umisc#TabPrevRelatively(n) abort
+  exec 'tabprev ' . a:n
 endfunction
 
 " vim:fdm=marker
