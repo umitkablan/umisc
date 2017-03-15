@@ -190,10 +190,10 @@ endfunction
 function! umisc#YieldSemicolonIfAppropriate() abort
   let l:ret = ''
   if pumvisible()
-    let l:ret = '\<C-y>' "neocomplete#smart_close_popup()
+    let l:ret = "\<C-y>".neocomplete#smart_close_popup()
   endif
   if umisc#IsSemicolonAppropriateHere()
-    let l:ret = l:ret . ';'
+    let l:ret .= ';'
   endif
   return l:ret
 endfunction
