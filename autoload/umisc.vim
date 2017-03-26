@@ -1,5 +1,18 @@
 scriptencoding utf-8
 
+function! umisc#FpathFilterRelStrs(fpath) abort
+  let ret = a:fpath
+  let updir_i = strridx(ret, '../')
+  if updir_i != -1
+    let ret = ret[updir_i+3:]
+  endif
+  let curdir_i = strridx(ret, './')
+  if curdir_i != -1
+    let ret = ret[curdir_i+2:]
+  endif
+  return ret
+endfunction
+
 function! umisc#DirectorySettled(curPath) abort
     let b:local_vimrc_path = a:curPath
     let l:lvimrc = a:curPath . '/.lvimrc'
