@@ -10,6 +10,13 @@ function! umisc#FpathFilterRelStrs(fpath) abort
   if curdir_i != -1
     let ret = ret[curdir_i+2:]
   endif
+  let curly_close = strridx(ret, '}/')
+  if curly_close != -1
+    let curly_open = strridx(ret, '${', curly_close)
+    if curly_open != -1
+      let ret = (curly_open > 0 ? ret[0:curly_open-1] : '') . ret[curly_close+2:]
+    endif
+  endif
   return ret
 endfunction
 
