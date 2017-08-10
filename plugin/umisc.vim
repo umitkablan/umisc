@@ -1,3 +1,7 @@
+if exists('g:loaded_umisc_plugin')
+  finish
+endif
+let g:loaded_umisc_plugin = 1
 
 augroup umisc_QFixToggle
   autocmd!

@@ -1,5 +1,11 @@
 scriptencoding utf-8
 
+if exists('g:loaded_umisc_autoload') || !exists('g:loaded_umisc_plugin')
+  finish
+endif
+let g:loaded_umisc_autoload = 1
+
+
 function! umisc#FpathFilterRelStrs(fpath) abort
   let ret = a:fpath
   let updir_i = strridx(ret, '../')
