@@ -1,0 +1,21 @@
+UMisc
+-----
+Miscellaneous functionality and helpers.
+
+Airline Tab Naming
+------------------
+The plugin provides functionality to name airline tabs with project name. This name is set to buffer local variable `b:local_vimrc_path`.
+
+If the tabline naming is insufficient and you need to customize, you can also set `g:umisc_tab_naming_patterns` dictionary list. It's a list of dictionary of path patterns and definitions of how to extract and build tab names from it. Let's say you want to see the project name in xx abbreviation and first level child in tabname:
+
+```vim
+let g:umisc_tab_naming_patterns = [ {
+    \ '.*/LongDeepHierarchy/my_xx_project/\(.\+\)': {
+      \ 'default': 'xx',
+      \ 'replace': '\1',
+      \ 'result': ['^\([a-zA-Z]\+\)/.*', 'xx/\1']
+    \ }
+  \ }
+  \ ]
+```
+
