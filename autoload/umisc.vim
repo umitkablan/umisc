@@ -203,20 +203,34 @@ function! umisc#IsSemicolonAppropriateHere() abort
   " TODO:
   " Write a regex which will execute faster
   " Think about plugin extraction of the idea
-  let cline = getline('.')
-  let lastchar  = cline[col('$')-2]
-  let firstchar = cline[0]
-  if col('$') == col('.') && lastchar !=# ';' && lastchar !=# '{' && lastchar !=# '}' && lastchar !=# ',' &&
-        \ lastchar !=# ':' && firstchar !=# '#' && cline !~# '^\s*$' && lastchar !=# '\\' && !s:IsHereAComment()
-    return 1
+  let [_, ln, cl, _] = getpos('.')
+  if col('$') != cl
+    return 0
   endif
-  return 0
+  let cline = getline(ln)
+  let firstchar = cline[0]
+  if firstchar ==# '#'
+    return 0
+  endif
+  let lastchar = cline[cl-2]
+  if lastchar =~# ';\|{\|}\|,\|:\|\\'
+    return 0
+  endif
+  if cline =~# '^\s*$' || s:IsHereAComment()
+    return 0
+  endif
+  " Next line to start with brace
+  let cline = getline(ln+1)
+  if cline =~# '^\s*{'
+    return 0
+  endif
+  return 1
 endfunction
 
 function! umisc#YieldSemicolonIfAppropriate() abort
   let l:ret = ''
   if pumvisible()
-    let l:ret = "\<C-y>".neocomplete#smart_close_popup()
+    let l:ret = neocomplete#smart_close_popup()
   endif
   if umisc#IsSemicolonAppropriateHere()
     let l:ret .= ';'
