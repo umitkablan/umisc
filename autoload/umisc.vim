@@ -190,8 +190,16 @@ function! s:MapPumInsert(key, insertSpaceAfter) abort
   if !a:insertSpaceAfter
     exec 'imap <expr> ' . a:key . ' pumvisible() ? \"\<C-y>'.a:key.'" : "'.a:key.'"'
   else
-    exec 'imap <expr> ' . a:key . ' pumvisible() ? neocomplete#close_popup()'.a:key.'\<Space>\" : \"'.a:key.'"'
+    exec 'imap <expr> ' . a:key . ' pumvisible() ? \"\<C-y>'.a:key.'\<Space>\" : \"'.a:key.'"'
   endif
+endfunction
+
+function! umisc#HasNonspaceBeforeCursor() abort
+  if col('.') == 1
+    return 0
+  endif
+  let ln = getline('.')
+  return ln !~ '.*\s$'
 endfunction
 
 function! s:IsHereAComment() abort
@@ -228,10 +236,7 @@ function! umisc#IsSemicolonAppropriateHere() abort
 endfunction
 
 function! umisc#YieldSemicolonIfAppropriate() abort
-  let l:ret = ''
-  if pumvisible()
-    let l:ret = neocomplete#smart_close_popup()
-  endif
+  let l:ret = pumvisible() ? "\<C-y>" : ''
   if umisc#IsSemicolonAppropriateHere()
     let l:ret .= ';'
   endif
